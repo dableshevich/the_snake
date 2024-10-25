@@ -127,7 +127,6 @@ def handle_keys(game_object):
     """Get pressed key"""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
             raise SystemExit
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP and game_object.direction != DOWN:
@@ -138,14 +137,20 @@ def handle_keys(game_object):
                 game_object.next_direction = LEFT
             elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
                 game_object.next_direction = RIGHT
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
 
 
 def main():
     """Main function"""
     # Инициализация PyGame:
     pygame.init()
-    apple = Apple()
     snake = Snake()
+    apple = Apple()
+    best_score = 0
+
+    while (apple.position in snake.positions):
+        apple.position = apple.randomize_position()
 
     while True:
         clock.tick(SPEED)
@@ -153,12 +158,18 @@ def main():
         handle_keys(snake)
         snake.update_direction()
         snake.move()
-        print(snake.get_head_position)
+
         if (snake.get_head_position == apple.position):
             snake.length += 1
-            apple.position = apple.randomize_position()
+            while (apple.position in snake.positions):
+                apple.position = apple.randomize_position()
 
         if (snake.get_head_position in snake.positions[1:]):
+            if (snake.length > best_score):
+                pygame.display.set_caption(
+                    f'Змейка (best score: {snake.length})'
+                )
+                best_score = snake.length
             snake = snake.reset()
 
         snake.draw()
